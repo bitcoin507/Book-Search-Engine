@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,} from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
-
+import { useQuery, } from 'react-apollo-hooks';
 import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
@@ -8,30 +8,16 @@ import { removeBookId } from '../utils/localStorage';
 const SavedBooks = () => {
   const [userData, setUserData] = useState({});
 
-  // use this to determine if `useEffect()` hook needs to run again
+  //use the `useQuery()` Hook to execute the `GET_ME` query on load and save it to a variable named `userData`.
   const userDataLength = Object.keys(userData).length;
 
-  useEffect(() => {
+  useQuery(() => {
     const getUserData = async () => {
-      try {
-        const token = Auth.loggedIn() ? Auth.getToken() : null;
+      const { data } = await getMe();
+      setUserData(data);
+    }
 
-        if (!token) {
-          return false;
-        }
 
-        const response = await getMe(token);
-
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        const user = await response.json();
-        setUserData(user);
-      } catch (err) {
-        console.error(err);
-      }
-    };
 
     getUserData();
   }, [userDataLength]);

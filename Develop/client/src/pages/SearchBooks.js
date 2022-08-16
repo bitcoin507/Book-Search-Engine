@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
-import { useMutation useQuery } from '@apollo/client';
-import { SAVE_BOOK } from '../utils/mutations';
+import { useMutation,} from '@apollo/client';
+import {SAVE_BOOK} from '..//utils/mutations';
 import Auth from '../utils/auth';
-import { searchGoogleBooks } from '../utils/API';
+import { saveBook, searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
@@ -53,22 +53,24 @@ const SearchBooks = () => {
     }
   };
 
-  // create function to handle saving a book to our database
+  //  Use the Apollo `useMutation()` Hook to execute the `SAVE_BOOK` mutation in the `handleSaveBook()` function instead of the `saveBook()` function imported from the `API` file.
+
   const handleSaveBook = async (bookId) => {
     try {
-       const{ data } = await SAVE_BOOK({ variables: { bookId } });
-       const { saveBook } = data;
-       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-     } catch (err) {
-       console.error(err);
-     }
- 
-       
- 
-       
- 
+      const { data } = await saveBook(bookId);
+      setSearchedBooks(data.saveBook);
+      setSavedBookIds([...savedBookIds, bookId]);
+      
+    } catch (err) {
+      console.error(err);
+    }
+
     
-   };
+
+
+
+  };
+
   return (
     <>
       <Jumbotron fluid className='text-light bg-dark'>
