@@ -1,41 +1,56 @@
-import React, { useState,} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
-import { useQuery, } from 'react-apollo-hooks';
-import { getMe, deleteBook } from '../utils/API';
+import {useQuery} from '@apollo/client';
+import {GET_ME} from '../utils/queries';
+
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
-import{useMutation} from '@apollo/client';
-import{REMOVE_BOOK} from '../utils/mutations';
 
 const SavedBooks = () => {
   const [userData, setUserData] = useState({});
 
-  //use the `useQuery()` Hook to execute the `GET_ME` query on load and save it to a variable named `userData`.
+  // use this to determine if `useEffect()` hook needs to run again
   const userDataLength = Object.keys(userData).length;
 
-  useQuery(() => {
-    const getUserData = async () => {
-      const { data } = await getMe();
-      setUserData(data);
-    }
+  // use the `useQuery()` Hook to execute the `GET_ME` query on load and save it to a variable named `userData`.
+
+  const {data, loading, error} = useQuery(GET_ME);
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+  if (data) {
+    setUserData(data.getMe);
+  }
+  console.log(userData);
 
 
 
-    getUserData();
-  }, [userDataLength]);
+ 
+
+
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
+    const token = Auth.loggedIn() ? Auth.getToken() : null;
+
+    if (!token) {
+      return false;
+    }
+
     try {
-      const { data } = await deleteBook(bookId);
+      const response = await deleteBook(bookId, token);
+
+      if (!response.ok) {
+        throw new Error('something went wrong!');
+      }
+
+      const updatedUser = await response.json();
+      setUserData(updatedUser);
+      // upon success, remove book's id from localStorage
       removeBookId(bookId);
-      setUserData(data);
     } catch (err) {
       console.error(err);
     }
-  }
-
-   
+  };
 
   // if data isn't here yet, say so
   if (!userDataLength) {
