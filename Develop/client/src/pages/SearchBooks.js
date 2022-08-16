@@ -55,21 +55,24 @@ const SearchBooks = () => {
 
   //  Use the Apollo `useMutation()` Hook to execute the `SAVE_BOOK` mutation in the `handleSaveBook()` function instead of the `saveBook()` function imported from the `API` file.
 
+  const [saveBook] = useMutation(SAVE_BOOK);
   const handleSaveBook = async (bookId) => {
     try {
-      const { data } = await saveBook(bookId);
-      setSearchedBooks(data.saveBook);
-      setSavedBookIds([...savedBookIds, bookId]);
-      
+      const { data } = await saveBook({
+        variables: {
+          bookId,
+        },
+      });
+      setSavedBookIds([...savedBookIds, data.saveBook.bookId]);
     } catch (err) {
       console.error(err);
     }
-
+  }
     
 
 
 
-  };
+  
 
   return (
     <>
